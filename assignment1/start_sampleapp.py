@@ -37,10 +37,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='Backend', description='', epilog='Beckend daemon')
     parser.add_argument('--server-ip', default='0.0.0.0')
     parser.add_argument('--server-port', type=int, default=PORT)
+    
+    # THÊM DÒNG NÀY ĐỂ NHẬN PEER ID:
+    parser.add_argument('--peer-id', type=str, default='Guest_Peer')
  
     args = parser.parse_args()
     ip = args.server_ip
     port = args.server_port
+    peer_id = args.peer_id  # LẤY BIẾN PEER ID
 
-    # Prepare and launch the RESTful application
-    create_sampleapp(ip, port)
+    # TRUYỀN THÊM PEER ID VÀO HÀM NÀY:
+    create_sampleapp(ip, port, peer_id)

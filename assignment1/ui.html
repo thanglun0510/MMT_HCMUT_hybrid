@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>P2P Chat - Peer A</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 400px; margin: auto; }
+        .box { border: 1px solid #ccc; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        input, button { padding: 8px; margin-top: 5px; width: 100%; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <h3>Điều khiển Peer A (Cổng 2001)</h3>
+        <button onclick="connectAll()">1. Kết nối mạng lưới (Connect All)</button>
+        <p id="status" style="color: green; font-size: 14px;"></p>
+    </div>
+
+    <div class="box">
+        <h3>Gửi tin nhắn (Broadcast)</h3>
+        <input type="text" id="msgInput" placeholder="Nhập tin nhắn...">
+        <button onclick="sendMessage()">2. Gửi tin nhắn</button>
+    </div>
+
+    <script>
+        // Hàm gọi API /connect-all (Thay thế lệnh GET trên REST Client)
+        function connectAll() {
+            document.getElementById('status').innerText = "Đang kết nối...";
+            fetch('http://127.0.0.1:2001/connect-all')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').innerText = "Đã tìm thấy: " + data.new_peers + " peer(s)";
+                })
+                .catch(err => alert("Lỗi: Hãy chắc chắn Backend 2001 đang chạy!"));
+        }
+
+        // Hàm gọi API /broadcast-peer (Thay thế lệnh POST trên REST Client)
+        function sendMessage() {
+            let text = document.getElementById('msgInput').value;
+            if (!text) return alert("Chưa nhập tin nhắn!");
+
+            fetch('http://127.0.0.1:2001/broadcast-peer', {
+                method: 'POST',
+                body: JSON.stringify({ message: text }) // Đóng gói JSON y hệt bạn làm
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("Đã gửi thành công!");
+                document.getElementById('msgInput').value = ''; // Xóa khung chat
+            });
+        }
+    </script>
+</body>
+</html>

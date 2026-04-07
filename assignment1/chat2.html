@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>P2P Chat - Peer B</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 450px; margin: auto; background-color: #f4f8ff; }
+        .box { border: 1px solid #b3d4fc; background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        input, button { padding: 8px; margin-top: 5px; width: 100%; box-sizing: border-box; }
+        /* Đổi màu nút của Peer B sang màu Xanh lá cho dễ phân biệt */
+        button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #218838; }
+        
+        /* Style cho khung hiển thị Chat */
+        #chatBox { 
+            height: 200px; 
+            overflow-y: auto; 
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            background-color: #f9f9f9; 
+            margin-top: 10px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <h3 style="color: #28a745;">1. Trạng thái Peer B (Cổng 2002)</h3>
+        <button onclick="connectAll()">Kết nối mạng lưới</button>
+        <p id="status" style="color: green; font-size: 14px; font-weight: bold;"></p>
+    </div>
+
+    <div class="box">
+        <h3 style="color: #28a745;">2. Khung Chat</h3>
+        <div id="chatBox">Chưa có tin nhắn nào...</div>
+    </div>
+
+    <div class="box">
+        <h3 style="color: #28a745;">3. Gửi tin nhắn</h3>
+        <input type="text" id="msgInput" placeholder="Nhập câu trả lời gửi Peer A...">
+        <button onclick="sendMessage()">Gửi đi</button>
+    </div>
+
+    <script>
+        // CỔNG ĐÃ ĐƯỢC ĐỔI THÀNH 2002 ĐỂ TRỎ VÀO PEER B
+        const API_URL = 'http://127.0.0.1:2002'; 
+
+        // Hàm 1: Kết nối
+        function connectAll() {
+            event.target.disabled = true;
+            document.getElementById('status').innerText = "Đang tìm bạn bè...";
+            fetch(`${API_URL}/connect-all`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('status').innerText = "Đã kết nối với: " + data.new_peers + " peer(s)";
+                })
+                .catch(err => {
+                    alert("Lỗi: Hãy chắc chắn Backend 2002 đang chạy!");
+                    event.target.disabled = false;
+                });
+        }
+
+        // Hàm 2: Gửi tin nhắn
+        function sendMessage() {
+            let text = document.getElementById('msgInput').value;
+            if (!text) return;
+
+            fetch(`${API_URL}/broadcast-peer`, {
+                method: 'POST',
+                body: JSON.stringify({ message: text })
+            }).then(() => {
+                document.getElementById('msgInput').value = ''; 
+            });
+        }
+
+        // Hàm 3: Tự động lấy tin nhắn (Polling)
+        function fetchMessages() {
+            fetch(`${API_URL}/get-messages`)
+                .then(res => res.json())
+                .then(data => {
+                    let box = document.getElementById('chatBox');
+                    if (data.messages && data.messages.length > 0) {
+                        box.innerHTML = data.messages.join('<br><hr style="margin:5px 0;">');
+                        box.scrollTop = box.scrollHeight; // Tự cuộn xuống dòng mới nhất
+                    }
+                })
+                .catch(err => console.log("Đang đợi Server Bật..."));
+        }
+
+        // Cài đặt cho hàm fetchMessages tự động chạy mỗi 2 giây
+        setInterval(fetchMessages, 2000);
+    </script>
+</body>
+</html>
